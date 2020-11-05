@@ -1,0 +1,15 @@
+default:
+    suites:
+        default:
+            contexts:
+                - App\Tests\Behat\Context\Ui\ContactContext
+
+    extensions:
+        FriendsOfBehat\SymfonyExtension:
+            bootstrap: tests/bootstrap.php
+        Behat\MinkExtension:
+            base_url: "http://localhost:8000/"
+            show_cmd: 'open %s'
+            sessions:
+                symfony:
+                    symfony: ~
