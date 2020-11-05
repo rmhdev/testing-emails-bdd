@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title 'Contact us' %}
+
+{% block body %}
+    <p>Contact with us</p>
+    {{ form_start(form) }}
+        <fieldset>
+            <legend>Your information</legend>
+            {{ form_row(form.name) }}
+            {{ form_row(form.email) }}
+        </fieldset>
+        {{ form_rest(form.email) }}
+        <button type="submit">send</button>
+    {{ form_end(form) }}
+{% endblock %}
