@@ -1,8 +1,8 @@
 {% extends 'email/base.html.twig' %}
 
-{% block title %}Message received{% endblock %}
+{% block title %}Contact message received{% endblock %}
 
 {% block body %}
-    <p>Hi, {{ contact.name -}}
-        <br/>We will contact you soon!</p>
+    <p>Hello there!
+        <br/>We got new contact message from {{ contact.name }} ({{ contact.email }})</p>
 {% endblock %}

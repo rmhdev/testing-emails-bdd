@@ -1,5 +1,7 @@
 {% block title %}Lorem Ipsum{% endblock %}
 
+
 {% block body %}{% endblock %}
 ---
-Sent in {{ 'now'|date('Y') }} by Demo App ({{ absolute_url(path('contact')) }})
+Sent in {{ 'now'|date('Y') }} by Demo App
+{{ absolute_url(path('contact')) }}

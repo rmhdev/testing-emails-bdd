@@ -3,6 +3,7 @@ default:
         default:
             contexts:
                 - App\Tests\Behat\Context\Ui\ContactContext
+                - App\Tests\Behat\Context\Setup\EmailContext
 
     extensions:
         FriendsOfBehat\SymfonyExtension:

@@ -7,6 +7,9 @@ namespace App\Tests\Behat\Context\Ui;
 use App\Tests\Behat\Page\ContactPage;
 use App\Tests\Behat\Page\SuccessPage;
 use Behat\MinkExtension\Context\RawMinkContext;
+use FriendsOfBehat\SymfonyExtension\Driver\SymfonyDriver;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\BrowserKit\AbstractBrowser;
 use Webmozart\Assert\Assert;
 
 final class ContactContext extends RawMinkContext
@@ -54,10 +57,23 @@ final class ContactContext extends RawMinkContext
     }
 
     /**
-     * @Then I should be notified that the contact request has been submitted successfully
+     * @Then I should see a confirmation that the message has been sent successfully
      */
     public function successPageIsOpen(): void
     {
         Assert::true($this->successPage->isOpen());
+    }
+
+    /**
+     * @return AbstractBrowser|KernelBrowser
+     */
+    private function getKernelBrowser(): KernelBrowser
+    {
+        $driver = $this->getSession()->getDriver();
+        if ($driver instanceof SymfonyDriver) {
+            return $driver->getClient();
+        }
+
+        throw new \UnexpectedValueException(sprintf('Driver is %s, expected SymfonyDriver', get_class($driver)));
     }
 }

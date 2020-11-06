@@ -44,8 +44,8 @@ class ContactController extends AbstractController
     private function createEmail(ContactDTO $contact): TemplatedEmail
     {
         return (new TemplatedEmail())
-            ->from('hello@example.com')
-            ->to($contact->email)
+            ->from('no-reply@mywebsite.example.com')
+            ->to('contact@mywebsite.example.com')
             ->subject('Contact received')
             ->htmlTemplate('email/contact.html.twig')
             ->textTemplate('email/contact.txt.twig')
