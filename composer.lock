@@ -4464,27 +4464,24 @@
         },
         {
             "name": "friends-of-behat/page-object-extension",
-            "version": "v0.3.1",
+            "version": "v0.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FriendsOfBehat/PageObjectExtension.git",
-                "reference": "b77db7346ba0e8fe60efd5855effe23635dc73d9"
+                "reference": "2e65b0bd7cca6ff2085b0fa885dc13dc57b18d4b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfBehat/PageObjectExtension/zipball/b77db7346ba0e8fe60efd5855effe23635dc73d9",
-                "reference": "b77db7346ba0e8fe60efd5855effe23635dc73d9",
+                "url": "https://api.github.com/repos/FriendsOfBehat/PageObjectExtension/zipball/2e65b0bd7cca6ff2085b0fa885dc13dc57b18d4b",
+                "reference": "2e65b0bd7cca6ff2085b0fa885dc13dc57b18d4b",
                 "shasum": ""
             },
             "require": {
                 "behat/mink": "^1.7",
-                "php": "^7.1"
-            },
-            "conflict": {
-                "symfony/routing": "<3.4"
+                "php": "^7.1 || ^8.0"
             },
             "require-dev": {
-                "symfony/routing": "^3.4"
+                "symfony/routing": "^3.4 || ^4.4 || ^5.1"
             },
             "suggest": {
                 "symfony/routing": "Allow better support for PageObject pattern in Symfony applications"
@@ -4523,9 +4520,9 @@
             "description": "Provides default classes for Page object pattern in Behat",
             "support": {
                 "issues": "https://github.com/FriendsOfBehat/PageObjectExtension/issues",
-                "source": "https://github.com/FriendsOfBehat/PageObjectExtension/tree/master"
+                "source": "https://github.com/FriendsOfBehat/PageObjectExtension/tree/v0.3.2"
             },
-            "time": "2019-12-19T10:42:44+00:00"
+            "time": "2020-11-05T20:37:07+00:00"
         },
         {
             "name": "friends-of-behat/symfony-extension",
