@@ -7,14 +7,14 @@ namespace App\Tests\Behat\Context\Setup;
 use Behat\Behat\Hook\Call\BeforeScenario;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Mink\Driver\BrowserKitDriver;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
+use FriendsOfBehat\SymfonyExtension\Driver\SymfonyDriver;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\BrowserKit\AbstractBrowser;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
-use Symfony\Component\Mime\Address;
+use Symfony\Component\Mailer\Event\MessageEvent;
+use Symfony\Component\Mailer\Event\MessageEvents;
 use Symfony\Component\Mime\Email;
 use Webmozart\Assert\Assert;
 
@@ -25,26 +25,15 @@ class EmailContext extends RawMinkContext
      */
     public function beforeScenario(BeforeScenarioScope $scope): void
     {
-        // Trying to enable the profiler here does not work...
-//        $this->getKernelBrowser()->followRedirects(false);
-//        $this->getKernelBrowser()->enableProfiler();
+        $this->getClient()->followRedirects(false);
     }
 
     /**
      * @AfterScenario @email
      */
-    public function afterScenario(AfterScenarioScope $scope)
+    public function afterScenario(AfterScenarioScope $scope): void
     {
-        $this->getKernelBrowser()->followRedirects(true);
-    }
-
-    /**
-     * @When I do not follow redirects
-     */
-    public function iDoNotFollowRedirects(): void
-    {
-        $this->getKernelBrowser()->followRedirects(false);
-        $this->getKernelBrowser()->enableProfiler();
+        $this->getClient()->followRedirects(true);
     }
 
     /**
@@ -52,49 +41,71 @@ class EmailContext extends RawMinkContext
      */
     public function emailSentTo(string $recipient): void
     {
-        $email = $this->getCollectedEmail();
-        $toAddresses = array_map(static function (Address $address) {
-            return $address->getAddress();
-        }, $email->getTo());
+        Assert::same(1, $this->countEmails());
+        $toAddresses = [];
+        foreach ($this->getEmails() as $email) {
+            foreach ($email->getTo() as $address) {
+                $toAddresses[] = $address->getAddress();
+            }
+        }
         Assert::inArray($recipient, $toAddresses);
     }
 
-    private function getCollectedEmail(): Email
+    /**
+     * @return Email[]|TemplatedEmail[]
+     */
+    private function getEmails(string $transport = null, bool $queued = false): array
     {
-        $messages = $this->getMessageDataCollector()->getEvents()->getMessages();
-        Assert::count($messages, 1);
+        return array_map(static function (MessageEvent $messageEvent) {
+            return $messageEvent->getMessage();
+        }, $this->filterMessageMailerEvents($transport, $queued));
+    }
 
-        return $messages[0];
+    private function countEmails(string $transport = null, bool $queued = false): int
+    {
+        return count($this->filterMessageMailerEvents($transport, $queued));
     }
 
     /**
-     * @return DataCollectorInterface|MessageDataCollector
+     * @return MessageEvent[]
      */
-    private function getMessageDataCollector(): MessageDataCollector
+    private function filterMessageMailerEvents(string $transport = null, bool $queued = false): array
     {
-        /** @see https://symfony.com/doc/5.1/email.html#problem-the-collector-doesn-t-contain-the-email */
-        $browser = $this->getKernelBrowser();
-        Assert::false($browser->isFollowingRedirects(), 'You should disable redirects');
-        $browser->enableProfiler();
+        return array_filter(
+            $this->getMessageMailerEvents()->getEvents($transport),
+            static function (MessageEvent $event) use ($queued) {
+                return ($queued && $event->isQueued()) || (!$queued && !$event->isQueued());
+            }
+        );
+    }
 
-        /** @see https://symfony.com/doc/5.1/email.html#problem-the-collector-object-is-null */
-        $profile = $browser->getProfile();
-        Assert::notEmpty($profile, 'The profiler is not enabled');
-        Assert::true($profile->hasCollector('mailer'), 'The profiler does not have a "mailer" collector');
+    private function getMessageMailerEvents(): MessageEvents
+    {
+        $container = $this->getClient()->getContainer()->get('test.service_container');
+        Assert::notEmpty($container, 'TestContainer was not found. Make sure you are in the "test" environment.');
+        Assert::true(
+            $container->has('mailer.logger_message_listener'),
+            'A client must have Mailer enabled to make email assertions. Did you forget to require symfony/mailer?'
+        );
 
-        return $profile->getCollector('mailer');
+        return $container->get('mailer.logger_message_listener')->getEvents();
     }
 
     /**
      * @return AbstractBrowser|KernelBrowser
      */
-    private function getKernelBrowser(): KernelBrowser
+    private function getClient(): KernelBrowser
+    {
+        return $this->getDriver()->getClient();
+    }
+
+    private function getDriver(): SymfonyDriver
     {
         $driver = $this->getSession()->getDriver();
-        if ($driver instanceof BrowserKitDriver) {
-            return $driver->getClient();
+        if ($driver instanceof SymfonyDriver) {
+            return $driver;
         }
 
-        throw new UnsupportedDriverActionException('Expected BrowserKitDriver', $driver);
+        throw new UnsupportedDriverActionException('Expected SymfonyDriver', $driver);
     }
 }
